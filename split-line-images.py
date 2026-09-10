@@ -1,0 +1,79 @@
+import cv2
+import numpy as np
+import sys
+from pathlib import Path
+import pdb
+
+MAX_LINE_HEIGHT = 45 # wasn't it 30?
+
+def segment_lines_with_max_height(image_path):
+    output_root = "line-images/" + Path(image_path).stem + "_"
+    # pdb.set_trace()
+    # 1. Load image and threshold (text pixels = 255, background = 0)
+    image = cv2.imread(image_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # 2. Compute horizontal projection profile
+    proj = np.sum(thresh, axis=1)
+
+    # 3. Identify continuous raw line regions (y_start, y_end)
+    text_rows = np.where(proj > 0)[0]
+    if len(text_rows) == 0:
+        return []
+
+    raw_bounds = []
+    start = text_rows[0]
+    for i in range(1, len(text_rows)):
+        if text_rows[i] > text_rows[i - 1] + 1:
+            raw_bounds.append((start, text_rows[i - 1]))
+            start = text_rows[i]
+    raw_bounds.append((start, text_rows[-1]))
+
+    # 4. Recursively split any region that exceeds max_line_height
+    final_bounds = []
+
+    def split_region(y_start, y_end):
+        height = y_end - y_start + 1
+
+        if height <= MAX_LINE_HEIGHT:
+            final_bounds.append((y_start, y_end))
+            return
+
+        # Look for the optimal split point in the middle 60% of the block
+        margin = int(height * 0.2)
+        search_start = y_start + margin
+        search_end = y_end - margin
+
+        if search_start >= search_end:
+            # Fallback: split dead center if block is too small for margins
+            split_point = y_start + height // 2
+        else:
+            # Find the row with the minimal text pixel density (the best gap)
+            sub_proj = proj[search_start : search_end + 1]
+            split_point = search_start + np.argmin(sub_proj)
+
+        # Recursively evaluate both halves
+        split_region(y_start, split_point)
+        split_region(split_point + 1, y_end)
+
+    for y_start, y_end in raw_bounds:
+        split_region(y_start, y_end)
+
+    # 5. Crop and save individual lines
+    lines = []
+    for idx, (y_start, y_end) in enumerate(final_bounds):
+        line_crop = image[y_start : y_end + 1, :]
+        lines.append(line_crop)
+        cv2.imwrite(f"{output_root}{str(idx + 1).rjust(3, '0')}.png", line_crop)
+
+    return lines
+
+image_name = sys.argv[1]
+# 13265301-original-50_1.png
+
+
+# Example Usage:
+lines = segment_lines_with_max_height(image_name)
+# pdb.set_trace()
+print(f"Extracted {len(lines)} line(s).")

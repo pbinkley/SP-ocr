@@ -1,0 +1,15 @@
+SP-ocr
+
+- test the ability to ocr the edprin of Summa Predicancium
+- using images from Basel
+
+
+- image size:
+    - large download: 1000x1347, 221 kb
+    = full size download: 2246x4508, 300dpi, 8.4mb
+
+
+transcriptions
+- prompt: This is a page from a book written in Latin and printed in the 1480s. Transcribe it, respecting the two-column layout and expanding the abbreviations.
+- large, Ollama, qwen3: large-ollama-qwen3.txt - not great
+= original, Ollama, qwen3: 
