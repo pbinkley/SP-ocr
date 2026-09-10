@@ -76,4 +76,4 @@ image_name = sys.argv[1]
 # Example Usage:
 lines = segment_lines_with_max_height(image_name)
 # pdb.set_trace()
-print(f"Extracted {len(lines)} line(s).")
+print(f"{image_name}: extracted {len(lines)} line(s).")

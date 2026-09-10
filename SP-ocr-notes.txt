@@ -5,7 +5,7 @@ SP-ocr
 
 
 - image size:
-    - large download: 1000x1347, 221 kb
+    - large download: jpg 1000x1347, 221 kb
     = full size download: 2246x4508, 300dpi, 8.4mb
 
 
@@ -13,3 +13,19 @@ transcriptions
 - prompt: This is a page from a book written in Latin and printed in the 1480s. Transcribe it, respecting the two-column layout and expanding the abbreviations.
 - large, Ollama, qwen3: large-ollama-qwen3.txt - not great
 = original, Ollama, qwen3: 
+
+
+Process for sample text
+
+- separate the two columns of sample page images, put them in column-images folder
+- transcribe them in Gemini using the prompt in transcription-prompt.txt - should end up with 52 lines per column
+- TODO capture bounding boxes for lines - I'll need the bounding boxes for the columns, so that I can ultimately get the bounding boxes relative to the page
+- store the transcriptions in column-text
+- TODO correct the transcriptions
+- split the column images into line images with split-line-images.py - they will be stored in line-images
+- delete line images that contain no text - should end up with 52 images per full column - NOTE you may have to delete the first line image, which will put the line numbering off by one in the image file names - TODO decide whether to fix this
+- TODO create the json files containing for each line the name of the line image and the transcription text
+- TODO when the full set of json files have been created, follow the process for local training
+- TODO process all the pages
+
+- separate project: find and transcribe all of the marginal notes (paragraph and article numbers, other notes) - capture bounding boxes

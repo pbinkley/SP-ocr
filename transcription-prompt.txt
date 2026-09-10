@@ -1,0 +1,8 @@
+This is a page from a book written in Latin and printed in the 1480s. Transcribe it, keeping the line breaks. Accurately represent the special characters with their unicode versions. Sample lines: 
+
+ignotis. ¶ vtpote hoĭbus quibus loquendū et
+stra incredulos ſps ſuum nō agnoſcetes in
+aliud ūi eſſe qz vn ſumptū eſt appærat
+ciam habere. Ad istam pacientiam etiam ab-
+
+Special characters from the MUFI initiative are found, such as ᷑ (COMBINING UR ABOVE), ᷒ (COMBINING US ABOVE).
