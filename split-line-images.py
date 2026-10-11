@@ -2,19 +2,44 @@
 # Search was for "python image divide lines of text"
 # lightly modified for use with downloaded images
 
+# input image: volume-pdfs/volume-1/13265301.jpg
+# output image directory: training-data/page-13265301
+
+# note: the source image should be a column, not a page
+# TODO handle left and right columns
+
 import cv2
 import numpy as np
 import sys
+import os
 from pathlib import Path
-import pdb
 
 MAX_LINE_HEIGHT = 45 # wasn't it 30?
 
-def segment_lines_with_max_height(image_path):
-    output_root = "line-images/" + Path(image_path).stem + "_"
-    # pdb.set_trace()
+def segment_lines_with_max_height(image_path, col_name):
+    image_id = Path(image_path).stem
+
+    # TODO handle training-data and test-data
+    print(f"**** Handling {image_id}-{col_name}")
+    output_root = Path(f"training-data/page-{image_id}")
+    if output_root.is_dir():
+        print(f"output_root exists: {output_root}")
+    else:
+        print(f"make dir output_root: {output_root}")
+        os.mkdir(output_root)
+
+    line_dir = output_root / col_name / "line-images"
+    if line_dir.is_dir():
+        print(f"line_dir exists: {line_dir}")
+    else:
+        print(f"make dir line_dir: {line_dir}")
+        Path(line_dir).mkdir(parents=True, exist_ok=True)
+
     # 1. Load image and threshold (text pixels = 255, background = 0)
-    image = cv2.imread(image_path)
+    # get column image: training-data/page-13265301/page-elements/13265301-left-text.jpg
+    column_image = output_root / "page-elements" / Path(f"{image_id}-{col_name}-text.jpg")
+    #breakpoint()
+    image = cv2.imread(column_image)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
@@ -69,15 +94,20 @@ def segment_lines_with_max_height(image_path):
     for idx, (y_start, y_end) in enumerate(final_bounds):
         line_crop = image[y_start : y_end + 1, :]
         lines.append(line_crop)
-        cv2.imwrite(f"{output_root}{str(idx + 1).rjust(3, '0')}.png", line_crop)
+        cv2.imwrite(f"{line_dir}/{str(idx + 1).rjust(3, '0')}.png", line_crop)
 
     return lines
 
-image_name = sys.argv[1]
-# 13265301-original-50_1.png
+page_image = sys.argv[1]
+# volume-pdfs/volume-1/13265305.jpg
+print(f"image: {page_image}")
 
+# create output dir
+image_name = Path(page_image).stem
 
 # Example Usage:
-lines = segment_lines_with_max_height(image_name)
-# pdb.set_trace()
-print(f"{image_name}: extracted {len(lines)} line(s).")
+# handle left and right columns of a given page
+left_lines = segment_lines_with_max_height(page_image, "left")
+right_lines = segment_lines_with_max_height(page_image, "right")
+
+print(f"{image_name}: extracted {len(left_lines) + len(right_lines)} line(s).")
