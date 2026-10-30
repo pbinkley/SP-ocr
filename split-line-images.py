@@ -5,8 +5,8 @@
 # input image: volume-pdfs/volume-1/13265301.jpg
 # output image directory: training-data/page-13265301
 
-# note: the source image should be a column, not a page
-# TODO handle left and right columns
+# to run: python split-line-images.py volume-pdfs/volume-1/13265301.jpg
+# output will be single-line images: training-data/page-13265301/left/line-images/001.png
 
 import cv2
 import numpy as np
@@ -89,17 +89,20 @@ def segment_lines_with_max_height(image_path, col_name):
     for y_start, y_end in raw_bounds:
         split_region(y_start, y_end)
 
-    # 5. Crop and save individual lines
+    # 5. Crop and save individual lines 
     lines = []
+    line_counter = 1
     for idx, (y_start, y_end) in enumerate(final_bounds):
-        line_crop = image[y_start : y_end + 1, :]
-        lines.append(line_crop)
-        cv2.imwrite(f"{line_dir}/{str(idx + 1).rjust(3, '0')}.png", line_crop)
-
+        # ignore lines with unrealistic height
+        if (y_end - y_start) > 10:
+            line_crop = image[y_start : y_end + 1, :]
+            lines.append(line_crop)
+            cv2.imwrite(f"{line_dir}/{str(line_counter).rjust(3, '0')}.png", line_crop)
+            line_counter += 1
     return lines
 
 page_image = sys.argv[1]
-# volume-pdfs/volume-1/13265305.jpg
+# e.g. volume-pdfs/volume-1/13265305.jpg
 print(f"image: {page_image}")
 
 # create output dir
